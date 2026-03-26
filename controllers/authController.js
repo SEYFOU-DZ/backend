@@ -32,10 +32,15 @@ const register = async (req, res) => {
       user.password = hashedPassword;
       await user.save()
     }
-    // send otp to email
-    await generateAndSendOtp(user);
+    // send otp to email (never crash if email misconfigured)
+    const otpRes = await generateAndSendOtp(user);
 
-    res.status(201).json({ message: "verification code sent to email" });
+    res.status(201).json({
+      message: otpRes?.emailSent
+        ? "verification code sent to email"
+        : "Account created. OTP email could not be sent (check server email settings).",
+      emailSent: Boolean(otpRes?.emailSent),
+    });
 
   } catch (err) {
     console.log("there is an error in register", err);
@@ -118,9 +123,14 @@ const resendOtp = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found register again" });
     if (user.isVerified) return res.status(400).json({ message: "User already verified" });
 
-    await generateAndSendOtp(user);
+    const otpRes = await generateAndSendOtp(user);
 
-    res.status(200).json({ message: "New verification code sent to email" });
+    res.status(200).json({
+      message: otpRes?.emailSent
+        ? "New verification code sent to email"
+        : "Could not send OTP email (check server email settings).",
+      emailSent: Boolean(otpRes?.emailSent),
+    });
   } catch (err) {
     console.log("error in resendOtp:", err);
     res.status(500).json({ message: "Server error" });
@@ -144,7 +154,7 @@ const login = async (req, res) => {
     if (!isPasswordMatch) return res.status(400).json({ message: "wrong email or password" });
 
     if (!user.isVerified) {
-      generateAndSendOtp(user);
+      await generateAndSendOtp(user);
       return res.status(403).json({ message: "not verified" });
     }
 
