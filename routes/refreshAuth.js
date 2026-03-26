@@ -7,17 +7,34 @@ const REFRESH_SECRET =
 
 router.post("/refreshAuth", async (req, res)=>{
     const refreshToken = req.cookies.refreshToken;
+    const sameSite = process.env.NODE_ENV === "production" ? "none" : "lax";
 
     if(!refreshToken) {
-        res.clearCookie("token");
-        res.clearCookie("refreshToken");
+        res.clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite,
+        });
+        res.clearCookie("refreshToken", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite,
+        });
         return res.status(401).json({message:"Unauthoraized"});
     }
 
      jwt.verify(refreshToken, REFRESH_SECRET,(err,decoded)=>{
         if(err) {
-            res.clearCookie("token");
-            res.clearCookie("refreshToken");
+            res.clearCookie("token", {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite,
+            });
+            res.clearCookie("refreshToken", {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite,
+            });
             return res.status(401).json({message:"Unauthorized"});
         }
         const user = decoded.UserInfo;
@@ -26,7 +43,7 @@ router.post("/refreshAuth", async (req, res)=>{
          res.cookie("token", accessToken, {
          httpOnly:true,
          secure: process.env.NODE_ENV === "production",
-         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+         sameSite,
          maxAge: 30 * 1000,
          });
 

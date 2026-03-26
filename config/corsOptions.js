@@ -8,10 +8,6 @@ const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Accept any Vercel frontend domain directly without env vars.
-    if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
-      return callback(null, true);
-    }
     callback(null, false);
   },
   credentials: true,
