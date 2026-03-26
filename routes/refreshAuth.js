@@ -2,6 +2,8 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const {generateAccessToken} = require("../lib/generateTokens");
 const router = express.Router();
+const REFRESH_SECRET =
+  process.env.REFRESH_TOKEN_SECRET || "fallback_refresh_secret_change_me";
 
 router.post("/refreshAuth", async (req, res)=>{
     const refreshToken = req.cookies.refreshToken;
@@ -12,7 +14,7 @@ router.post("/refreshAuth", async (req, res)=>{
         return res.status(401).json({message:"Unauthoraized"});
     }
 
-     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET,(err,decoded)=>{
+     jwt.verify(refreshToken, REFRESH_SECRET,(err,decoded)=>{
         if(err) {
             res.clearCookie("token");
             res.clearCookie("refreshToken");
@@ -24,7 +26,7 @@ router.post("/refreshAuth", async (req, res)=>{
          res.cookie("token", accessToken, {
          httpOnly:true,
          secure: process.env.NODE_ENV === "production",
-         sameSite: "lax",
+         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
          maxAge: 30 * 1000,
          });
 
