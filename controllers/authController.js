@@ -181,7 +181,17 @@ const login = async (req, res) => {
     });
 
 
-    res.status(201).json({ message: "User verified successfully", token: accessToken });
+    res.status(201).json({
+      message: "User verified successfully",
+      token: accessToken,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        isAdmin: Boolean(user.isAdmin),
+      },
+    });
 
   } catch (err) {
     console.log("there is an error in login", err);
