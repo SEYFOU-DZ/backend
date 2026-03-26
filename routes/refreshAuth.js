@@ -40,12 +40,6 @@ router.post("/refreshAuth", async (req, res)=>{
         const user = decoded.UserInfo;
         // generate access token
         const accessToken = generateAccessToken(user);
-         res.cookie("token", accessToken, {
-         httpOnly:true,
-         secure: process.env.NODE_ENV === "production",
-         sameSite,
-         maxAge: 30 * 1000,
-         });
 
          res.status(200).json({ token: accessToken });
    })

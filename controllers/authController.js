@@ -87,7 +87,7 @@ const verifyEmail = async (req, res) => {
     user.otpExpiration = undefined;
     await user.save();
 
-    // store token in the cookie
+    // Only store refreshToken as httpOnly cookie (accessToken returned in JSON body)
     const sameSite = process.env.NODE_ENV === "production" ? "none" : "lax";
 
     res.cookie("refreshToken", refreshToken, {
@@ -96,14 +96,6 @@ const verifyEmail = async (req, res) => {
       sameSite,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
-    res.cookie("token", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite,
-      maxAge: 30 * 1000,
-    });
-
 
     res.status(201).json({ message: "verified successfully", token: accessToken });
 
@@ -163,7 +155,7 @@ const login = async (req, res) => {
     // generate refresh token
     const refreshToken = generateRefreshToken(user);
 
-    // store token in the cookie
+    // Only store refreshToken as httpOnly cookie (accessToken returned in JSON body)
     const sameSite = process.env.NODE_ENV === "production" ? "none" : "lax";
 
     res.cookie("refreshToken", refreshToken, {
@@ -172,14 +164,6 @@ const login = async (req, res) => {
       sameSite,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
-    res.cookie("token", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite,
-      maxAge: 30 * 1000,
-    });
-
 
     res.status(201).json({
       message: "User verified successfully",
